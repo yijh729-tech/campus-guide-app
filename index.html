@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>한밭대 N8 길 찾기 - 신소재공학과</title>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-light: #3b82f6;
+      --primary-bg: #eff6ff;
+      --accent: #0284c7;
+      --accent-soft: #e0f2fe;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --card-bg: #ffffff;
+      --bg-page: #f8fafc;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+      --highlight: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+
+    body {
+      background-color: #e2e8f0;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    /* 360px 모바일 화면 기준 컨테이너 */
+    .app-container {
+      width: 100%;
+      max-width: 420px;
+      min-width: 320px;
+      background-color: var(--bg-page);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* 상단 테스트 컨트롤 바 */
+    .test-toolbar {
+      background-color: #1e293b;
+      color: #f1f5f9;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .test-date-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 600;
+      color: #93c5fd;
+    }
+
+    .test-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-test {
+      background: #334155;
+      color: #ffffff;
+      border: 1px solid #475569;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .btn-test:active {
+      background: #475569;
+    }
+
+    .btn-test.reset {
+      color: #fca5a5;
+      border-color: #7f1d1d;
+    }
+
+    /* 헤더 */
+    .app-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+      color: #ffffff;
+      padding: 16px 14px 14px;
+      position: relative;
+    }
+
+    .dept-tag {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      letter-spacing: -0.3px;
+    }
+
+    .app-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .app-subtitle {
+      font-size: 12px;
+      color: #bfdbfe;
+      margin-top: 3px;
+    }
+
+    /* 본문 영역 */
+    .app-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    /* 카드 기본 스타일 */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 1. 빠른 검색창 (초안 생성/입력값) */
+    .search-box {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 42px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 15px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-search {
+      height: 42px;
+      padding: 0 16px;
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .btn-search:active {
+      background-color: #1e3a8a;
+    }
+
+    /* 빠른 추천 태그 */
+    .quick-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .quick-tag-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .quick-tag-btn {
+      background-color: var(--primary-bg);
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .quick-tag-btn:active {
+      background-color: #dbeafe;
+    }
+
+    /* 알림/재조율 배너 */
+    .feedback-banner {
+      display: none;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    .feedback-banner.show {
+      display: block;
+    }
+
+    .feedback-banner.warning {
+      background-color: var(--warning-bg);
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .feedback-banner.danger {
+      background-color: var(--danger-bg);
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .feedback-banner.info {
+      background-color: var(--accent-soft);
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+    }
+
+    /* 4. 모니터링: 층별 내비게이션 & 미니맵 */
+    .floor-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .floor-tab-btn {
+      flex: 1;
+      min-width: 52px;
+      padding: 8px 4px;
+      background-color: #f1f5f9;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .floor-tab-btn.active {
+      background-color: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 2px 4px rgba(30, 64, 175, 0.25);
+    }
+
+    /* 평면도 그래픽 구조 (N8 층별 미니 맵) */
+    .map-container {
+      background-color: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px;
+      position: relative;
+    }
+
+    .floor-indicator {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+    }
+
+    .public-facilities {
+      display: flex;
+      justify-content: space-between;
+      background-color: #e2e8f0;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .room-cell {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: all 0.2s;
+    }
+
+    .room-cell:hover {
+      border-color: var(--primary-light);
+    }
+
+    .room-cell.highlighted {
+      background-color: #fef08a !important;
+      border-color: #ca8a04 !important;
+      border-width: 2px !important;
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.45);
+      animation: pulse-glow 1.5s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    .room-cell-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .room-number {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .room-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .room-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 선택/검색된 호실 상세 카드 */
+    .detail-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      border: 2px solid var(--primary-light);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px dashed #cbd5e1;
+      padding-bottom: 8px;
+    }
+
+    .detail-title-group h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .detail-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .route-guide-box {
+      background-color: var(--primary-bg);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 12px;
+      color: #1e3a8a;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .route-guide-box strong {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--primary);
+    }
+
+    .detail-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11.5px;
+      color: #334155;
+    }
+
+    /* 3. 최근 검색 기록 (실행 기록) */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .history-info {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .history-info strong {
+      color: var(--primary);
+      font-size: 12px;
+    }
+
+    .history-info span {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-history-view {
+      background-color: var(--accent-soft);
+      color: var(--accent);
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-history-del {
+      background: none;
+      color: #94a3b8;
+      border: none;
+      padding: 4px 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-history-del:hover {
+      color: var(--danger);
+    }
+
+    .empty-history-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 12px;
+    }
+
+    /* 푸터 */
+    .app-footer {
+      text-align: center;
+      padding: 16px 12px;
+      font-size: 11px;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 상단 테스트 컨트롤 바 (AGENTS.md 필수 버튼) -->
+    <div class="test-toolbar">
+      <div class="test-date-badge">
+        <span>📅</span>
+        <span id="virtualDateText">2026. 11. 19.(목)</span>
+      </div>
+      <div class="test-btn-group">
+        <button class="btn-test" id="btnNextDay" title="앱 안의 가상 날짜를 하루 넘깁니다">다음 날로 이동</button>
+        <button class="btn-test reset" id="btnResetAll" title="모든 검색 기록을 지우고 초기화합니다">처음부터 다시</button>
+      </div>
+    </div>
+
+    <!-- 헤더 -->
+    <header class="app-header">
+      <div class="dept-tag">한밭대학교 신소재공학과</div>
+      <h1 class="app-title">🧭 N8 신소재응용관 길 찾기</h1>
+      <p class="app-subtitle">신입생 전공 건물 강의실 & 시설 길라잡이</p>
+    </header>
+
+    <main class="app-body">
+      <!-- 1. 강의실 검색 영역 (입력값 & 초안 생성) -->
+      <section class="card" aria-label="강의실 검색">
+        <h2 class="card-title">🔍 강의실 빠른 검색</h2>
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="searchInput" 
+            class="search-input" 
+            placeholder="호실 번호 입력 (예: 301, 401, 402)" 
+            inputmode="numeric" 
+            maxlength="10"
+          >
+          <button class="btn-search" id="btnSearch">찾기</button>
+        </div>
+
+        <!-- 빠른 선택 태그 (N8 실제 구조 반영) -->
+        <div class="quick-tags-wrap">
+          <span class="quick-tag-label">추천:</span>
+          <button class="quick-tag-btn" data-room="108">108호 학과사무실</button>
+          <button class="quick-tag-btn" data-room="201">201호 기초강의실</button>
+          <button class="quick-tag-btn" data-room="206">206호 기초실험실</button>
+          <button class="quick-tag-btn" data-room="305">305호 CAD실습실</button>
+          <button class="quick-tag-btn" data-room="101">101호 학생회실</button>
+        </div>
+
+        <!-- 피드백 / 재조율 안내 배너 -->
+        <div id="feedbackBanner" class="feedback-banner"></div>
+      </section>
+
+      <!-- 2. 선택된 호실 상세 길 안내 카드 -->
+      <section id="detailSection" class="detail-card" style="display: none;">
+        <div class="detail-header">
+          <div class="detail-title-group">
+            <h3 id="detailRoomNumber">301호</h3>
+            <div id="detailRoomName" class="detail-subtitle">학과사무실 (서류제출·학과상담)</div>
+          </div>
+          <span id="detailFloorBadge" class="room-badge" style="background:#bfdbfe; color:#1e40af; font-size:11px; padding:2px 6px;">3층</span>
+        </div>
+
+        <!-- 찾아가는 길 팁 (신입생 눈높이 안내) -->
+        <div class="route-guide-box">
+          <strong>🚶 찾아가는 길</strong>
+          <span id="detailRouteText">1층 중앙 현관 진입 ➔ 중앙 엘리베이터 타고 3층 하차 ➔ 좌측 복도로 들어서면 2번째 문입니다.</span>
+        </div>
+
+        <div class="detail-meta-list">
+          <div><strong>📌 주요 용도:</strong> <span id="detailUsageText">학과 서류 제출, 학점 상담, 전공 문의</span></div>
+          <div><strong>⏱️ 개방 시간:</strong> 평일 09:00 ~ 18:00 (점심시간 12:00 ~ 13:00)</div>
+          <div id="detailNoticeText" style="color: #d97706; font-weight: 600;"></div>
+        </div>
+      </section>
+
+      <!-- 3. 모니터링: 층별 미니 맵 & 건물 구조도 -->
+      <section class="card" aria-label="건물 층별 안내">
+        <h2 class="card-title">🏢 N8 층별 구조도</h2>
+        
+        <!-- 층 선택 탭 -->
+        <div class="floor-tabs" id="floorTabs">
+          <button class="floor-tab-btn" data-floor="1">1층</button>
+          <button class="floor-tab-btn" data-floor="2">2층</button>
+          <button class="floor-tab-btn active" data-floor="3">3층</button>
+          <button class="floor-tab-btn" data-floor="4">4층</button>
+          <button class="floor-tab-btn" data-floor="5">5층</button>
+        </div>
+
+        <!-- 층별 시각적 구조도 (미니맵) -->
+        <div class="map-container">
+          <div class="floor-indicator">
+            <span id="mapFloorTitle">N8 3층 전공강의 및 학과사무실</span>
+            <span style="font-size:10px; color:#64748b;">호실 터치 시 상세 경로</span>
+          </div>
+
+          <!-- 공용 시설 (엘리베이터, 계단, 화장실) -->
+          <div class="public-facilities">
+            <span>[서편 계단]</span>
+            <span style="color: var(--primary); font-weight: 700;">🛗 [중앙 엘리베이터]</span>
+            <span>[동편 계단·화장실]</span>
+          </div>
+
+          <!-- 호실 그리드 (동적 렌더링) -->
+          <div class="room-grid" id="roomGrid"></div>
+        </div>
+      </section>
+
+      <!-- 4. 실행 기록: 최근 검색한 강의실 목록 -->
+      <section class="card" aria-label="최근 검색 기록">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h2 class="card-title" style="margin-bottom:0;">🕒 최근 찾은 강의실</h2>
+          <span style="font-size:10px; color:var(--text-muted);">최대 5개 저장</span>
+        </div>
+        <div id="historyList" class="history-list">
+          <!-- 동적 렌더링 -->
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      한밭대학교 신소재공학과 신입생 길 찾기 도우미<br>
+      컴퓨터공학과 「나눔의 교육」 바이브코딩 과제
+    </footer>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       N8 건물 강의실 및 시설 데이터베이스 (국립한밭대 N8 첨단소재관)
+       ========================================================================== */
+    const N8_DATA = {
+      1: {
+        floorName: "1층 신소재 학과사무실 및 학생 편의시설",
+        rooms: [
+          { number: "108", name: "신소재공학과 사무실", desc: "서류 제출, 수강신청/장학 상담, 학사 문의 (107~109호 구역)", route: "1층 중앙 현관 진입 후 좌측 복도로 들어서면 위치", notice: "📋 학과 조교 선생님 상주 (09:00~18:00)" },
+          { number: "101", name: "학생회실 / 과방", desc: "신소재공학과 학생회 및 휴식공간", route: "1층 중앙 현관 진입 후 우측 복도 첫 번째 문", notice: "학생증 태그 또는 비밀번호 입력 후 출입" },
+          { number: "102", name: "학생 라운지", desc: "스터디 및 휴식 라운지", route: "1층 서편 복도 안쪽", notice: "" },
+          { number: "105", name: "대형 합동세미나실", desc: "대형 특강 및 학과 행사", route: "1층 중앙 복도 안쪽 대형 홀", notice: "" }
+        ]
+      },
+      2: {
+        floorName: "2층 1·2학년 기초강의실 및 물리·재료실험실",
+        rooms: [
+          { number: "201", name: "기초 전공강의실 1", desc: "1학년 신입생 기초 전공 이론 강의", route: "2층 중앙 엘리베이터 하차 후 좌측 복도 첫 번째 문", notice: "" },
+          { number: "202", name: "기초 전공강의실 2", desc: "1·2학년 전공 핵심 강의", route: "2층 중앙 엘리베이터 하차 후 좌측 복도 두 번째 문", notice: "" },
+          { number: "205", name: "공동물리실험실", desc: "기초 물리 및 자연과학 실험", route: "2층 중앙 엘리베이터 하차 후 우측 복도", notice: "⚠️ 실험복 착용 권장" },
+          { number: "206", name: "기초재료실험실", desc: "신소재 기초 재료 합성 및 물성 측정", route: "2층 동편 복도 안쪽", notice: "⚠️ 실험복 및 안전화 필수 착용" },
+          { number: "208", name: "창의세미나실(스터디룸)", desc: "공학교육혁신센터 그룹스터디 및 토론", route: "2층 서편 계단 앞 복도", notice: "사전 예약제 스터디룸" }
+        ]
+      },
+      3: {
+        floorName: "3층 전공 심화강의실 및 CAD 전산실습실",
+        rooms: [
+          { number: "301", name: "신소재 전공강의실 3", desc: "2·3학년 전공 심화 수업", route: "3층 중앙 엘리베이터 하차 후 좌측 복도 첫 번째", notice: "" },
+          { number: "302", name: "신소재 전공강의실 4", desc: "전공 이론 및 프로젝트 강의", route: "3층 중앙 엘리베이터 하차 후 좌측 복도 두 번째", notice: "" },
+          { number: "305", name: "CAD 전산실습실", desc: "컴퓨터 전산 및 재료 모델링 실습", route: "3층 중앙 엘리베이터 하차 후 우측 복도", notice: "음식물 반입 금지" },
+          { number: "306", name: "첨단모델링실", desc: "재료 전산 시뮬레이션 및 데이터 분석", route: "3층 동편 복도 안쪽", notice: "" },
+          { number: "308", name: "KOLAS 공인시험실", desc: "국제공인 시험 및 시편 분석실", route: "3층 서편 복도 끝", notice: "출입 승인 필요" }
+        ]
+      },
+      4: {
+        floorName: "4층 공과대학 행정실 및 교수 연구실",
+        rooms: [
+          { number: "401", name: "공과대학 행정실", desc: "공과대학 통합 행정 지원 및 회의실", route: "4층 중앙 엘리베이터 하차 후 바로 앞 정면", notice: "" },
+          { number: "404", name: "교수연구실 1", desc: "신소재공학과 교수 연구 및 상담실", route: "4층 좌측 복도 연구동", notice: "방문 전 상담 예약 권장" },
+          { number: "405", name: "교수연구실 2", desc: "신소재공학과 교수 연구 및 상담실", route: "4층 좌측 복도 연구동", notice: "방문 전 상담 예약 권장" },
+          { number: "408", name: "전공 세미나실", desc: "학과 교수-학생 세미나 및 랩 미팅", route: "4층 우측 복도 안쪽", notice: "" }
+        ]
+      },
+      5: {
+        floorName: "5층 대학원 연구실 및 특수분석실",
+        rooms: [
+          { number: "501", name: "대학원 공동연구실 A", desc: "신소재 석·박사 연구공간", route: "5층 중앙 엘리베이터 하차 후 좌측 복도", notice: "정숙 유지 구역" },
+          { number: "502", name: "대학원 공동연구실 B", desc: "에너지 소재 연구팀 랩", route: "5층 중앙 엘리베이터 하차 후 우측 복도", notice: "정숙 유지 구역" },
+          { number: "506", name: "첨단소재 특수분석실", desc: "전자현미경(SEM) 등 정밀 분석기기실", route: "5층 동편 복도 끝", notice: "⚠️ 정밀분석 구역 / 담당 교수 승인 필요" }
+        ]
+      }
+    };
+
+    /* ==========================================================================
+       앱 상태 관리 (localStorage 접두사: n8nav_)
+       ========================================================================== */
+    const STORAGE_KEY_DATE = "n8nav_virtual_date";
+    const STORAGE_KEY_HISTORY = "n8nav_search_history";
+
+    let state = {
+      currentFloor: 1,
+      selectedRoomNumber: "108",
+      virtualDate: null,
+      history: []
+    };
+
+    /* 날짜 유틸리티 */
+    function getVirtualDate() {
+      const saved = localStorage.getItem(STORAGE_KEY_DATE);
+      if (saved) return new Date(saved);
+      const initial = new Date(2026, 10, 19); // 2026-11-19
+      localStorage.setItem(STORAGE_KEY_DATE, initial.toISOString());
+      return initial;
+    }
+
+    function formatKoreanDate(date) {
+      const days = ["일", "월", "화", "수", "목", "금", "토"];
+      const y = date.getFullYear();
+      const m = date.getMonth() + 1;
+      const d = date.getDate();
+      const dayName = days[date.getDay()];
+      return `${y}. ${m}. ${d}.(${dayName})`;
+    }
+
+    function formatShortDate(date) {
+      const m = date.getMonth() + 1;
+      const d = date.getDate();
+      return `${m}월 ${d}일`;
+    }
+
+    /* 기록 로드 및 저장 */
+    function loadHistory() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_HISTORY);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHistory(historyList) {
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyList));
+    }
+
+    /* ==========================================================================
+       검색 및 비즈니스 로직
+       ========================================================================== */
+    function findRoomData(roomNumberOrQuery) {
+      if (!roomNumberOrQuery) return null;
+      const cleaned = roomNumberOrQuery.trim().replace(/호$/, "");
+
+      for (const floor in N8_DATA) {
+        const rooms = N8_DATA[floor].rooms;
+        for (const room of rooms) {
+          if (room.number === cleaned || room.name.includes(cleaned) || room.desc.includes(cleaned)) {
+            return { floor: parseInt(floor, 10), ...room };
+          }
+        }
+      }
+      return null;
+    }
+
+    function showFeedback(message, type = "warning") {
+      const banner = document.getElementById("feedbackBanner");
+      banner.className = `feedback-banner show ${type}`;
+      banner.innerHTML = message;
+    }
+
+    function hideFeedback() {
+      const banner = document.getElementById("feedbackBanner");
+      banner.className = "feedback-banner";
+      banner.innerHTML = "";
+    }
+
+    /* 호실 선택 및 길 안내 표시 */
+    function selectRoom(roomData, addToHistory = true) {
+      hideFeedback();
+      state.currentFloor = roomData.floor;
+      state.selectedRoomNumber = roomData.number;
+
+      // 층 탭 갱신
+      renderFloorTabs();
+
+      // 맵 렌더링
+      renderMap(roomData.number);
+
+      // 상세 카드 업데이트
+      const detailSection = document.getElementById("detailSection");
+      detailSection.style.display = "flex";
+
+      document.getElementById("detailRoomNumber").textContent = `${roomData.number}호`;
+      document.getElementById("detailRoomName").textContent = roomData.name;
+      document.getElementById("detailFloorBadge").textContent = `${roomData.floor}층`;
+      document.getElementById("detailRouteText").textContent = roomData.route;
+      document.getElementById("detailUsageText").textContent = roomData.desc;
+      
+      const noticeEl = document.getElementById("detailNoticeText");
+      if (roomData.notice) {
+        noticeEl.textContent = roomData.notice;
+        noticeEl.style.display = "block";
+      } else {
+        noticeEl.style.display = "none";
+      }
+
+      // 최근 검색 기록에 추가
+      if (addToHistory) {
+        addSearchHistory(roomData);
+      }
+
+      // 스크롤 상세 카드로 살짝 이동
+      detailSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function addSearchHistory(roomData) {
+      const dateStr = formatShortDate(state.virtualDate);
+      
+      // 동일 호실 기존 기록 제거 (최신화)
+      state.history = state.history.filter(item => item.number !== roomData.number);
+
+      // 맨 앞에 추가
+      state.history.unshift({
+        number: roomData.number,
+        name: roomData.name,
+        floor: roomData.floor,
+        date: dateStr
+      });
+
+      // 최대 5개 유지
+      if (state.history.length > 5) {
+        state.history = state.history.slice(0, 5);
+      }
+
+      saveHistory(state.history);
+      renderHistory();
+    }
+
+    function removeHistoryItem(index) {
+      state.history.splice(index, 1);
+      saveHistory(state.history);
+      renderHistory();
+    }
+
+    /* 검색 실행 함수 */
+    function handleSearch() {
+      const input = document.getElementById("searchInput");
+      const query = input.value.trim();
+
+      if (!query) {
+        showFeedback("⚠️ 강의실 번호를 입력해주세요! (예: 301, 401)", "warning");
+        return;
+      }
+
+      if (query === "0" || query.length === 0) {
+        showFeedback("⚠️ 올바른 강의실 번호를 입력해주세요.", "warning");
+        return;
+      }
+
+      const found = findRoomData(query);
+      if (found) {
+        selectRoom(found, true);
+        input.value = "";
+      } else {
+        // 재조율: 존재하지 않는 번호일 때
+        showFeedback(
+          `<strong>❌ N8 건물에 '${query}' 강의실을 찾을 수 없습니다.</strong><br>` +
+          `신소재공학과 주요 시설을 찾아보시겠어요?<br>` +
+          `<div style="margin-top:6px; display:flex; gap:4px; flex-wrap:wrap;">` +
+          `<button class="quick-tag-btn" onclick="quickSelect('108')">108호 학과사무실</button>` +
+          `<button class="quick-tag-btn" onclick="quickSelect('201')">201호 기초강의실</button>` +
+          `<button class="quick-tag-btn" onclick="quickSelect('206')">206호 기초실험실</button>` +
+          `<button class="quick-tag-btn" onclick="quickSelect('305')">305호 CAD실습실</button>` +
+          `</div>`, 
+          "danger"
+        );
+      }
+    }
+
+    window.quickSelect = function(roomNum) {
+      const found = findRoomData(roomNum);
+      if (found) selectRoom(found, true);
+    };
+
+    /* ==========================================================================
+       UI 렌더링 함수들
+       ========================================================================== */
+    function renderFloorTabs() {
+      const tabs = document.querySelectorAll(".floor-tab-btn");
+      tabs.forEach(btn => {
+        const f = parseInt(btn.dataset.floor, 10);
+        if (f === state.currentFloor) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+
+      const floorInfo = N8_DATA[state.currentFloor];
+      document.getElementById("mapFloorTitle").textContent = `N8 ${state.currentFloor}층 - ${floorInfo.floorName}`;
+    }
+
+    function renderMap(highlightRoomNum = null) {
+      const floorInfo = N8_DATA[state.currentFloor];
+      const grid = document.getElementById("roomGrid");
+      grid.innerHTML = "";
+
+      floorInfo.rooms.forEach(room => {
+        const isHighlighted = highlightRoomNum && (room.number === highlightRoomNum);
+        const cell = document.createElement("div");
+        cell.className = `room-cell ${isHighlighted ? "highlighted" : ""}`;
+        cell.innerHTML = `
+          <div class="room-cell-header">
+            <span class="room-number">${room.number}호</span>
+            <span class="room-badge">${state.currentFloor}F</span>
+          </div>
+          <div class="room-name" title="${room.name}">${room.name}</div>
+        `;
+        cell.addEventListener("click", () => {
+          selectRoom({ floor: state.currentFloor, ...room }, true);
+        });
+        grid.appendChild(cell);
+      });
+    }
+
+    function renderHistory() {
+      const listEl = document.getElementById("historyList");
+      if (state.history.length === 0) {
+        listEl.innerHTML = `<div class="empty-history-text">최근 검색한 강의실이 없습니다.<br>원하는 강의실을 검색해 보세요!</div>`;
+        return;
+      }
+
+      listEl.innerHTML = "";
+      state.history.forEach((item, idx) => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="history-info" onclick="quickSelect('${item.number}')">
+            <strong>${item.number}호 ${item.name}</strong>
+            <span>${item.floor}층 • ${item.date} 검색</span>
+          </div>
+          <div class="history-actions">
+            <button class="btn-history-view" onclick="quickSelect('${item.number}')">보기</button>
+            <button class="btn-history-del" onclick="removeHistoryItem(${idx})" title="삭제">✕</button>
+          </div>
+        `;
+        listEl.appendChild(div);
+      });
+    }
+
+    function updateVirtualDateUI() {
+      document.getElementById("virtualDateText").textContent = formatKoreanDate(state.virtualDate);
+    }
+
+    /* ==========================================================================
+       이벤트 리스너 및 초기화
+       ========================================================================== */
+    document.addEventListener("DOMContentLoaded", () => {
+      state.virtualDate = getVirtualDate();
+      state.history = loadHistory();
+
+      updateVirtualDateUI();
+      renderFloorTabs();
+      renderMap();
+      renderHistory();
+
+      // 기본적으로 108호 학과사무실 선택 상태로 시작
+      const defaultRoom = findRoomData("108");
+      if (defaultRoom) {
+        selectRoom(defaultRoom, false);
+      }
+
+      // 검색 버튼 및 엔터키
+      document.getElementById("btnSearch").addEventListener("click", handleSearch);
+      document.getElementById("searchInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleSearch();
+      });
+
+      // 빠른 추천 태그 버튼들
+      document.querySelectorAll(".quick-tag-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const roomNum = btn.dataset.room;
+          if (roomNum) quickSelect(roomNum);
+        });
+      });
+
+      // 층 탭 클릭 이벤트
+      document.querySelectorAll(".floor-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.currentFloor = parseInt(btn.dataset.floor, 10);
+          renderFloorTabs();
+          renderMap();
+        });
+      });
+
+      // 필수 테스트 버튼 1: [다음 날로 이동]
+      document.getElementById("btnNextDay").addEventListener("click", () => {
+        state.virtualDate.setDate(state.virtualDate.getDate() + 1);
+        localStorage.setItem(STORAGE_KEY_DATE, state.virtualDate.toISOString());
+        updateVirtualDateUI();
+      });
+
+      // 필수 테스트 버튼 2: [처음부터 다시]
+      document.getElementById("btnResetAll").addEventListener("click", () => {
+        const confirmed = confirm("저장된 검색 기록과 설정을 모두 지우고 처음 상태로 돌아가시겠습니까?");
+        if (confirmed) {
+          localStorage.removeItem(STORAGE_KEY_HISTORY);
+          localStorage.removeItem(STORAGE_KEY_DATE);
+          state.virtualDate = new Date(2026, 10, 19);
+          state.history = [];
+          state.currentFloor = 1;
+          state.selectedRoomNumber = "108";
+          
+          updateVirtualDateUI();
+          renderFloorTabs();
+          renderMap();
+          renderHistory();
+          
+          const defaultRoom = findRoomData("108");
+          if (defaultRoom) selectRoom(defaultRoom, false);
+          
+          showFeedback("초기화되었습니다. 처음 상태로 되돌아갔습니다.", "info");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
